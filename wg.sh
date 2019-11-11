@@ -1,21 +1,13 @@
 #!/bin/bash
 #
-# https://github.com/l-n-s/wireguard-install
+# https://github.com/johndesu090/wireguard-install
 #
 # Copyright (c) 2018 Viktor Villainov. Released under the MIT License.
+# Remodified by JohnFordTV
 
 WG_CONFIG="/etc/wireguard/wg0.conf"
 
-function get_free_udp_port
-{
-    local port=$(shuf -i 2000-65000 -n 1)
-    ss -lau | grep $port > /dev/null
-    if [[ $? == 1 ]] ; then
-        echo "$port"
-    else
-        get_free_udp_port
-    fi
-}
+SERVER_PORT=2408;
 
 if [[ "$EUID" -ne 0 ]]; then
     echo "Sorry, you need to run this as root"
@@ -60,15 +52,12 @@ if [ ! -f "$WG_CONFIG" ]; then
         fi
     fi
 
-    if [ "$SERVER_PORT" == "" ]; then
-        SERVER_PORT=$( get_free_udp_port )
-    fi
 
     if [ "$CLIENT_DNS" == "" ]; then
         echo "Which DNS do you want to use with the VPN?"
         echo "   1) Cloudflare"
         echo "   2) Google"
-        echo "   3) OpenDNS"
+        echo "   3) JohnFordTV-DNS"
         read -p "DNS [1-3]: " -e -i 1 DNS_CHOICE
 
         case $DNS_CHOICE in
@@ -133,8 +122,7 @@ DNS = $CLIENT_DNS
 [Peer]
 PublicKey = $SERVER_PUBKEY
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = $SERVER_HOST:$SERVER_PORT
-PersistentKeepalive = 25" > $HOME/$CLIENT_NAME-wg0.conf
+Endpoint = $SERVER_HOST:$SERVER_PORT" > $HOME/$CLIENT_NAME-wg0.conf
 qrencode -t ansiutf8 -l L < $HOME/$CLIENT_NAME-wg0.conf
 
     echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
@@ -193,8 +181,7 @@ DNS = $CLIENT_DNS
 [Peer]
 PublicKey = $SERVER_PUBKEY
 AllowedIPs = 0.0.0.0/0, ::/0 
-Endpoint = $SERVER_ENDPOINT
-PersistentKeepalive = 25" > $HOME/$CLIENT_NAME-wg0.conf
+Endpoint = $SERVER_ENDPOINT" > $HOME/$CLIENT_NAME-wg0.conf
 qrencode -t ansiutf8 -l L < $HOME/$CLIENT_NAME-wg0.conf
 
     ip address | grep -q wg0 && wg set wg0 peer "$CLIENT_PUBKEY" allowed-ips "$CLIENT_ADDRESS/32"
