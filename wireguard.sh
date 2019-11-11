@@ -68,7 +68,7 @@ if [ ! -f "$WG_CONFIG" ]; then
         echo "Which DNS do you want to use with the VPN?"
         echo "   1) Cloudflare"
         echo "   2) Google"
-        echo "   3) JohnFordTV-DNS"
+        echo "   3) OpenDNS"
         read -p "DNS [1-3]: " -e -i 1 DNS_CHOICE
 
         case $DNS_CHOICE in
@@ -194,6 +194,7 @@ DNS = $CLIENT_DNS
 PublicKey = $SERVER_PUBKEY
 AllowedIPs = 0.0.0.0/0, ::/0 
 Endpoint = $SERVER_ENDPOINT
+PersistentKeepalive = 25" > $HOME/$CLIENT_NAME-wg0.conf
 qrencode -t ansiutf8 -l L < $HOME/$CLIENT_NAME-wg0.conf
 
     ip address | grep -q wg0 && wg set wg0 peer "$CLIENT_PUBKEY" allowed-ips "$CLIENT_ADDRESS/32"
